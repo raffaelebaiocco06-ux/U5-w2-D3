@@ -23,7 +23,8 @@ public class Blog {
     private String contenuto;
     @Column(nullable = false)
     private int tempoLettura;
-    @Column(nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "autore_id")
     private Autore autore;
 
     public Blog(long id, String categoria, String titolo, String contenuto, int tempoLettura, Autore autore) {

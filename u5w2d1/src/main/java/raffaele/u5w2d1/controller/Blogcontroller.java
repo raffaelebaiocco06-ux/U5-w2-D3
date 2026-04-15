@@ -1,5 +1,6 @@
 package raffaele.u5w2d1.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import raffaele.u5w2d1.entities.Blog;
@@ -18,8 +19,10 @@ public class Blogcontroller {
  }
 
     @GetMapping //fa la get
-    public List<Blog> findAll(){
-     return this.blogService.findAll();
+    public Page<Blog> findAll(@RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "10") int size,
+                              @RequestParam(defaultValue = "id") String sortBy){
+     return this.blogService.findAll(page,size,sortBy);
 
     }
 
