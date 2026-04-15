@@ -1,37 +1,48 @@
 package raffaele.u5w2d1.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 @Entity
-@Table(name="blogs")
-@NoArgsConstructor
+@Table(name = "blogs")
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class Blog {
+
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Setter(AccessLevel.NONE)
     private long id;
+
     @Column(nullable = false)
     private String categoria;
+
     @Column(nullable = false)
     private String titolo;
+
     @Column(nullable = false)
     private String cover;
+
     @Column(nullable = false)
     private String contenuto;
+
     @Column(nullable = false)
     private int tempoLettura;
+
     @ManyToOne
-    @JoinColumn(name = "autore_id")
+    @JoinColumn(name = "autore_id", nullable = false)
     private Autore autore;
 
-    public Blog(long id, String categoria, String titolo, String contenuto, int tempoLettura, Autore autore) {
-        this.id = id;//vediamo eh
+    public Blog(String categoria, String titolo, String cover, String contenuto, int tempoLettura, Autore autore) {
         this.categoria = categoria;
         this.titolo = titolo;
-        this.cover = "https://picsum.photos/200/300";
+        this.cover = cover;
         this.contenuto = contenuto;
         this.tempoLettura = tempoLettura;
         this.autore = autore;

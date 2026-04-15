@@ -6,19 +6,17 @@ import org.springframework.stereotype.Service;
 import raffaele.u5w2d1.entities.Autore;
 import raffaele.u5w2d1.entities.Blog;
 import raffaele.u5w2d1.payload.PayloadBlog;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import raffaele.u5w2d1.repositori.BlogRepository;
 
 @Service
 public class BlogService {
 
-    private List<Blog> blogDB = new ArrayList<>();
+    private final BlogRepository blogRepository;
     private final AutoreService autoreService;
 
     @Autowired
-    public BlogService(AutoreService autoreService) {
+    public BlogService(BlogRepository blogRepository, AutoreService autoreService) {
+        this.blogRepository = blogRepository;
         this.autoreService = autoreService;
     }
 
@@ -26,74 +24,45 @@ public class BlogService {
         if (size > 100 || size <= 0) size = 10;
         if (page < 0) page = 0;
 
-        List<Blog> sortedBlogs = new ArrayList<>(this.blogDB);
-
-        // ordinamento
-        switch (sortBy.toLowerCase()) {
-            case "titolo":
-                sortedBlogs.sort(Comparator.comparing(Blog::getTitolo));
-                break;
-            case "categoria":
-                sortedBlogs.sort(Comparator.comparing(Blog::getCategoria));
-                break;
-            case "tempolettura":
-                sortedBlogs.sort(Comparator.comparing(Blog::getTempoLettura));
-                break;
-            default:
-                sortedBlogs.sort(Comparator.comparing(Blog::getId));
-        }
-
-        Pageable pageable = PageRequest.of(page, size);
-
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), sortedBlogs.size());
-
-        if (start > sortedBlogs.size()) {
-            return new PageImpl<>(new ArrayList<>(), pageable, sortedBlogs.size());
-        }
-
-        List<Blog> pageContent = sortedBlogs.subList(start, end);
-
-        return new PageImpl<>(pageContent, pageable, sortedBlogs.size());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return this.blogRepository.findAll(pageable);
     }
 
     public Blog salvaBlog(PayloadBlog body) {
- Autore autore =autoreService.findById(body.getAutoreId());
-        Blog newBlog = new Blog(
-                blogDB.size() + 1,
-                body.getCategoria(),
-                body.getTitolo(),
-                body.getContenuto(),
-                body.getTempoLettura(),
-                autore
-        );
+        Autore autore = autoreService.findById(body.getAutoreId());
 
-        this.blogDB.add(newBlog);
+        Blog newBlog = new Blog();
+        newBlog.setCategoria(body.getCategoria());
+        newBlog.setTitolo(body.getTitolo());
+        newBlog.setCover(body.getCover());
+        newBlog.setContenuto(body.getContenuto());
+        newBlog.setTempoLettura(body.getTempoLettura());
+        newBlog.setAutore(autore);
 
-        System.out.println("Blog con id " + newBlog.getId() + " creato!");
-        return newBlog;
+        return this.blogRepository.save(newBlog);
     }
 
     public Blog findById(long id) {
-        for (Blog blog : blogDB) {
-            if (blog.getId() == id) return blog;
-        }
-        throw new RuntimeException("id non trovato");
+        return this.blogRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("id non trovato"));
     }
 
     public Blog findByIdAndUpdate(long id, PayloadBlog body) {
         Blog found = findById(id);
+        Autore autore = autoreService.findById(body.getAutoreId());
 
         found.setCategoria(body.getCategoria());
         found.setTitolo(body.getTitolo());
+        found.setCover(body.getCover());
         found.setContenuto(body.getContenuto());
         found.setTempoLettura(body.getTempoLettura());
+        found.setAutore(autore);
 
-        return found;
+        return this.blogRepository.save(found);
     }
 
     public void findByIdAndDelete(long id) {
         Blog found = findById(id);
-        blogDB.remove(found);
+        this.blogRepository.delete(found);
     }
 }
