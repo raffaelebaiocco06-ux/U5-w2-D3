@@ -5,6 +5,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import raffaele.u5w2d1.entities.Autore;
 import raffaele.u5w2d1.entities.Blog;
+import raffaele.u5w2d1.execptionnn.NotFoundException;
 import raffaele.u5w2d1.payload.PayloadBlog;
 import raffaele.u5w2d1.repositori.BlogRepository;
 
@@ -44,7 +45,7 @@ public class BlogService {
 
     public Blog findById(long id) {
         return this.blogRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("id non trovato"));
+                .orElseThrow(() -> new NotFoundException("Blog con id " + id + " non trovato"));
     }
 
     public Blog findByIdAndUpdate(long id, PayloadBlog body) {

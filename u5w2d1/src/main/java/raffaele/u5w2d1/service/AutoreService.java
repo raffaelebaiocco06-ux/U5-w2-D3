@@ -1,40 +1,42 @@
 package raffaele.u5w2d1.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import raffaele.u5w2d1.entities.Autore;
+import raffaele.u5w2d1.execptionnn.NotFoundException;
 import raffaele.u5w2d1.payload.PayloadAutore;
+import raffaele.u5w2d1.repositori.AutoreRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class AutoreService {
 
-    private List<Autore> autoreDB = new ArrayList<>();
+    private final AutoreRepository autoreRepository;
+
+    @Autowired
+    public AutoreService(AutoreRepository autoreRepository) {
+        this.autoreRepository = autoreRepository;
+    }
 
     public List<Autore> findAll() {
-        return this.autoreDB;
+        return this.autoreRepository.findAll();
     }
 
     public Autore salvaAutore(PayloadAutore body) {
-        Autore newAutore = new Autore(
-                autoreDB.size() + 1,
-                "https://ui-avatars.com/api/?name=" + body.getNome() + "+" + body.getCognome(),
-                body.getNascita(),
-                body.getEmail(),
-                body.getCognome(),
-                body.getNome()
-        );
+        Autore newAutore = new Autore();
+        newAutore.setNome(body.getNome());
+        newAutore.setCognome(body.getCognome());
+        newAutore.setEmail(body.getEmail());
+        newAutore.setNascita(body.getNascita());
+        newAutore.setAvatar("https://ui-avatars.com/api/?name=" + body.getNome() + "+" + body.getCognome());
 
-        this.autoreDB.add(newAutore);
-        return newAutore;
+        return this.autoreRepository.save(newAutore);
     }
 
     public Autore findById(long id) {
-        for (Autore autore : autoreDB) {
-            if (autore.getId() == id) return autore;
-        }
-        throw new RuntimeException("id non trovato");
+        return this.autoreRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Autore con id " + id + " non trovato"));
     }
 
     public Autore findByIdAndUpdate(long id, PayloadAutore body) {
@@ -44,12 +46,13 @@ public class AutoreService {
         found.setCognome(body.getCognome());
         found.setEmail(body.getEmail());
         found.setNascita(body.getNascita());
+        found.setAvatar("https://ui-avatars.com/api/?name=" + body.getNome() + "+" + body.getCognome());
 
-        return found;
+        return this.autoreRepository.save(found);
     }
 
     public void findByIdAndDelete(long id) {
         Autore found = findById(id);
-        autoreDB.remove(found);
+        this.autoreRepository.delete(found);
     }
 }
